@@ -1,0 +1,8 @@
+Flask
+flask-cors
+flask-sqlalchemy
+pymysql   (if MySQL)
+psycopg2-binary (if Postgres)
+reportlab
+python-dotenv
+guicorn
