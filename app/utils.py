@@ -7,6 +7,8 @@ from app.extensions import db
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        if request.method == "OPTIONS":
+            return "", 200
         auth_header = request.headers.get('Authorization')
         if not auth_header:
             return jsonify({"error": "Authorization header missing"}), 401
