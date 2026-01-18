@@ -12,10 +12,10 @@ def create_app():
     CORS(app, resources={r"/*": {"origins": "*"}})
     
     # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:1234@localhost/home_utility_db'
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     # app.config['SECRET_KEY'] = 'change_this_to_a_random_secret_string'
-    app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
+    app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 
     db.init_app(app)
 
