@@ -48,13 +48,20 @@ def email_statements():
             filename=f"{r.resident_name.replace(' ', '_')}.pdf"
         )
 
-    with smtplib.SMTP(os.environ["SMTP_HOST"], int(os.environ["SMTP_PORT"])) as server:
+    with smtplib.SMTP(
+        os.environ["SMTP_HOST"],
+        int(os.environ["SMTP_PORT"]),
+        timeout=10 
+    ) as server:
+        server.ehlo()
         server.starttls()
+        server.ehlo()
         server.login(
             os.environ["SMTP_USER"],
             os.environ["SMTP_PASSWORD"]
         )
         server.send_message(msg)
+
 
     return jsonify({
         "status": "sent",
