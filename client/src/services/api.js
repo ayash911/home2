@@ -1,12 +1,9 @@
 import axios from 'axios';
 
-// 1. Create the Axios Instance
 const api = axios.create({
-    baseURL: '/api', // Your Flask URL
+    baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 
-// 2. The Interceptor (The Security Guard)
-// Before every request, check if we have a token and attach it.
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
@@ -18,8 +15,6 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// 3. The Error Handler
-// If the token is expired (401), kick the user out.
 api.interceptors.response.use(
     (response) => response,
     (error) => {
