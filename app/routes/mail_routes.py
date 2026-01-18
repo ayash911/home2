@@ -2,32 +2,36 @@ from flask import Blueprint, request, jsonify
 from email.message import EmailMessage
 import smtplib
 import os
-from app.models import resident
 from app.models.resident import Resident
 from app.pdf_generator import generate_statement_pdf
 from app.utils import login_required
 from app.extensions import db
+from flask_cors import cross_origin
 
 mail_bp = Blueprint("mail_bp", __name__)
 
-@mail_bp.route("/email-statements", methods=["POST"])
+@mail_bp.route("/email-statements", methods=["POST", "OPTIONS"])
+@cross_origin(
+    origins=["https://home2-2r5o.onrender.com"],
+    supports_credentials=True
+)
 @login_required
 def email_statements():
-    res_id = (request.get_json() or {}).get("resident_id")
-    if (res_id):
-        print(res_id)
-        resident = db.session.get(Resident, res_id)
-        residents = Resident.query.filter_by(resident_id=resident.resident_id).all()
+    data = request.get_json(silent=True) or {}
+    res_id = data.get("resident_id")
+
+    if res_id:
+        resident = db.session.get(Resident, int(res_id))
+        if not resident:
+            return jsonify({"error": "Resident not found"}), 404
+        residents = [resident]
     else:
-        print(res_id)
         residents = Resident.query.all()
-    
-    to_email = "iit2023232@iiita.ac.in"
-    if not to_email:
-        return jsonify({"error": "email is required"}), 400
 
     if not residents:
         return jsonify({"error": "No residents found"}), 400
+
+    to_email = "iit2023232@iiita.ac.in"
 
     msg = EmailMessage()
     msg["Subject"] = "Monthly Ledger Statements"
