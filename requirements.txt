@@ -5,4 +5,4 @@ pymysql
 psycopg2-binary
 reportlab
 python-dotenv
-guicorn
+gunicorn
