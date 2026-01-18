@@ -9,13 +9,15 @@ load_dotenv()
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, resources={
-    r"/*": {
-        "origins": [
-            "https://home-nqvd.onrender.com"
-            ]
-        }
-    })
+    CORS(
+        app,
+        resources={r"/*": {"origins": [
+            "https://home2-2r5o.onrender.com"
+        ]}},
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    )
 
     
     # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:1234@localhost/home_utility_db'
