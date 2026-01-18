@@ -6,3 +6,4 @@ psycopg2-binary
 reportlab
 python-dotenv
 gunicorn
+pyjwt
