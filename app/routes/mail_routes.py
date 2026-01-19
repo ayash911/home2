@@ -1,12 +1,13 @@
 from flask import Blueprint, request, jsonify
-from email.message import EmailMessage
-import smtplib
+from flask_cors import cross_origin
 import os
+import base64
+import requests
+
 from app.models.resident import Resident
 from app.pdf_generator import generate_statement_pdf
 from app.utils import login_required
 from app.extensions import db
-from flask_cors import cross_origin
 
 mail_bp = Blueprint("mail_bp", __name__)
 
@@ -33,35 +34,40 @@ def email_statements():
 
     to_email = "iit2023232@iiita.ac.in"
 
-    msg = EmailMessage()
-    msg["Subject"] = "Monthly Ledger Statements"
-    msg["From"] = os.environ["SMTP_USER"]
-    msg["To"] = to_email
-    msg.set_content("Attached are the consolidated ledger statements.")
-
+    attachments = []
     for r in residents:
         pdf_buffer = generate_statement_pdf(r)
-        msg.add_attachment(
-            pdf_buffer.getvalue(),
-            maintype="application",
-            subtype="pdf",
-            filename=f"{r.resident_name.replace(' ', '_')}.pdf"
-        )
+        attachments.append({
+            "name": f"{r.resident_name.replace(' ', '_')}.pdf",
+            "content": base64.b64encode(pdf_buffer.getvalue()).decode()
+        })
 
-    with smtplib.SMTP(
-        os.environ["SMTP_HOST"],
-        int(os.environ["SMTP_PORT"]),
-        timeout=10 
-    ) as server:
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-        server.login(
-            os.environ["SMTP_USER"],
-            os.environ["SMTP_PASSWORD"]
-        )
-        server.send_message(msg)
+    payload = {
+        "sender": {
+            "email": os.environ["BREVO_SENDER"],
+            "name": "Home Utility System"
+        },
+        "to": [{"email": to_email}],
+        "subject": "Monthly Ledger Statements",
+        "htmlContent": "<p>Please find attached your ledger statement.</p>",
+        "attachment": attachments
+    }
 
+    response = requests.post(
+        "https://api.brevo.com/v3/smtp/email",
+        headers={
+            "api-key": os.environ["BREVO_API_KEY"],
+            "Content-Type": "application/json"
+        },
+        json=payload,
+        timeout=15
+    )
+
+    if response.status_code not in (200, 201):
+        return jsonify({
+            "error": "Email sending failed",
+            "details": response.text
+        }), 500
 
     return jsonify({
         "status": "sent",
