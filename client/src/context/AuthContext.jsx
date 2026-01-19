@@ -9,19 +9,19 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         // Check if token exists on load
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (token) {
             try {
                 const decoded = jwtDecode(token);
                 // Check expiry
                 if (decoded.exp * 1000 < Date.now()) {
-                    localStorage.removeItem('token');
+                    sessionStorage.removeItem('token');
                     setUser(null);
                 } else {
                     setUser(decoded);
                 }
             } catch (e) {
-                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
                 setUser(null);
             }
         }
@@ -29,13 +29,14 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = (token) => {
-        localStorage.setItem('token', token);
+        sessionStorage.setItem('token', token);
         setUser(jwtDecode(token));
     };
 
     const logout = () => {
-        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
         setUser(null);
+        window.location.href = "/login";
     };
 
     return (
